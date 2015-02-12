@@ -9,13 +9,16 @@ import gevent
 
 if __name__ == "__main__":
     headset = Emotiv(display_output = False)
-    gevent.spawn(headset.setup)
-    gevent.sleep(0) 
-    
+    #gevent.spawn(headset.setup)
+    #gevent.sleep(0) 
+    headset.setup()
     try:
         while True:
             packet = headset.dequeue()
-            print packet.gyro_x, packet.gyro_y
+            if packet == None:
+                print "Error, paquete nulo"
+            else:
+                print packet.gyro_x, packet.gyro_y
             gevent.sleep(0)
     except KeyboardInterrupt:
         headset.close()
