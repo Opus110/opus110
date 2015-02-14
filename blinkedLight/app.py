@@ -1,7 +1,10 @@
+#!/usr/bin/python
 import sys, pygame
 from datetime import time
 
-frec =  raw_input("Ingrese la frecuencia de parpadeo: ")
+#Frecuency settings
+frec = 10
+#frec =  raw_input("Ingrese la frecuencia de parpadeo: ")
 frec = float(frec)
 print "Frecuencia: ", frec
 T = 1/(frec*2)
@@ -9,14 +12,24 @@ print "Periodo: ",T
 FPS = 24
 t=0
 tlast = 0
-#pigame
-clock = pygame.time.Clock()
-pygame.init()
-size = width, height = 200,200
-screen = pygame.display.set_mode(size)
 black = 0, 0, 0
 white = 255,255,255
+blue = 0,0,255
+darkblue = 0,0,50
+green = 0,255,00
+darkgreen = 0,50,0
 state = True
+
+
+#pygame
+clock = pygame.time.Clock()
+pygame.init()
+size = width, height = 300,300
+screen = pygame.display.set_mode(size)
+pygame.display.set_caption('Frecuencia: '+str(frec)+' Hz')
+
+
+
 while True:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT: sys.exit()
@@ -24,16 +37,15 @@ while True:
 	seconds = milliseconds / 1000.0 # seconds passed since last frame (float)
 	t+=seconds
 	timespan = (t-tlast)
-
+	screen.fill(black)
 	if timespan >= T:
-		if state ==True:
-			screen.fill(black)
-		else:
-			screen.fill(white)
 		state = state == False
-		#print state
 		tlast = t
 		pass	
+	if state ==True:
+		pygame.draw.circle(screen, darkblue, (width/2, height/2), min(width,height)/3, 0)
+	else:
+		pygame.draw.circle(screen, blue	, (width/2, height/2), min(width,height)/3, 0)
 		
 	pygame.display.flip()
 	pass
