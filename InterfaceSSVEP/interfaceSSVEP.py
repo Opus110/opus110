@@ -14,6 +14,7 @@ pygame.font.init()
 
 size = width, height = 800,600
 screen = pygame.display.set_mode(size)
+pygame.display.set_caption("Opus 110")
 clock = pygame.time.Clock()
 black = colors["black"]
 gameState =  GameState()
