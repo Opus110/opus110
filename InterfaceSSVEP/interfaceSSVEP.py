@@ -13,10 +13,9 @@ pygame.init()
 pygame.font.init()
 
 size = width, height = 800,600
-black = 0,0,0
 screen = pygame.display.set_mode(size)
 clock = pygame.time.Clock()
-
+black = colors["black"]
 gameState =  GameState()
 
 #creating all sprites
@@ -29,17 +28,17 @@ background =  BackgroundVScrolling(width,height)
 leftarrow = Arrow(width,height,True, frec = 10)
 rightarrow = Arrow(width,height,False, frec = 14)
 avatar = Avatar(width,height)
-scorel = ScoreLabel()
-levell = LevelLabel()
+scorel = ScoreLabel(width,height)
+levell = LevelLabel(width,height)
 
 
 for i in range(3):
-	enemie =  Enemy((width,height))
-	enemie.randomTopPosition()
-	enemie.randomSpeed(x=0)
-	enemie.moving = True
-	enemies.add(enemie)
-	allSprites.add(enemie)
+	enemy =  Enemy((width,height))
+	enemy.randomTopPosition()
+	enemy.randomSpeed(x=0)
+	enemy.moving = True
+	enemies.add(enemy)
+	allSprites.add(enemy)
 
 allSprites.add(avatar)
 players.add(avatar)
@@ -48,6 +47,9 @@ allSprites.add(scorel)
 scoreboard.add(levell)
 allSprites.add(levell)
 
+avatar.allSprites = allSprites
+
+#Game loop
 while 1:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT: sys.exit()
@@ -66,6 +68,16 @@ while 1:
 	players.update(gameState)
 	enemies.update(gameState)
 	scoreboard.update(gameState)
+
+	colisionList = pygame.sprite.spritecollide(avatar, enemies,False)
+	if avatar.blink == False:
+		for enemy in colisionList:
+			enemy.randomTopPosition()
+			enemy.randomSpeed()
+			#enemies.add(enemy)
+			#allSprites.add(enemy)
+			avatar.startBlink()
+			gameState.lives -=1
 
 	allSprites.draw(screen) #draws all sprites
 	pygame.display.flip()

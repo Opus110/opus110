@@ -1,6 +1,6 @@
 import pygame
 
-debug = True
+debug = False
 
 STARTED = 0
 PLAYING = 1
@@ -21,7 +21,7 @@ class GameState():
 		self.resetGame()
 		pass
 	def resetGame(self):
-		self.score = 95
+		self.score = 0
 		self.level = 1
 		self.running = True
 		self.state = PLAYING

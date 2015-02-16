@@ -4,15 +4,40 @@ from GameState import *
 
 debug = False;
 
-class Avatar(pygame.sprite.Sprite):
+class Avatar(pygame.sprite.DirtySprite):
 	def __init__(self,width, height):
 		pygame.sprite.Sprite.__init__(self)
 		self.width = width
 		self.height = height
 		self.image = assets["avatar"]
+		self.image = pygame.transform.scale(self.image,(50,50))
 		self.rect = self.image.get_rect()
-		self.rect.y = self.height - self.rect.h - 50
+		self.rect.y = self.height - self.rect.h - 100
 		self.rect.x = (self.width - self.rect.w)/2
+		self.blink = False
+		self.blinkCount = 0
+		self.blinkState = 0
+		self.allSprites = None
+		self.enemies = None
+		pass
+	def startBlink(self):
+		if self.blink == False:
+			self.blinkCount =0
+			self.blink =True
+		pass
+	def calculateBlink(self):
+		if self.blink :
+				self.blinkCount += 1
+				if self.blinkCount % 10 == 0:
+					self.blinkState = 1 if self.blinkState ==2 else 2
+					if self.blinkState == 1:
+						self.allSprites.add(self)
+					else:
+						self.allSprites.remove(self)
+				if self.blinkCount > 300:
+					self.blink = False
+					self.blinkState = 1
+					self.allSprites.add(self)
 		pass
 	def update(self,*args):
 		gameState = args[0]
@@ -38,4 +63,5 @@ class Avatar(pygame.sprite.Sprite):
 				self.rect.x = 0
 			if(self.rect.x > self.width-self.rect.w ):
 				self.rect.x = self.width-self.rect.w
+			self.calculateBlink()
 		pass
