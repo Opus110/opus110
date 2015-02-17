@@ -23,15 +23,13 @@ gameState =  GameState()
 allSprites = pygame.sprite.Group()
 enemies =  pygame.sprite.Group()
 players = pygame.sprite.Group()
-scoreboard = pygame.sprite.Group()
 
+#creating all game objects
 background =  BackgroundVScrolling(width,height)
 leftarrow = Arrow(width,height,True, frec = 10)
 rightarrow = Arrow(width,height,False, frec = 14)
 avatar = Avatar(width,height)
-scorel = ScoreLabel(width,height)
-levell = LevelLabel(width,height)
-
+scoreboard = ScoreBoard(width,height)
 
 for i in range(3):
 	enemy =  Enemy((width,height))
@@ -43,11 +41,6 @@ for i in range(3):
 
 allSprites.add(avatar)
 players.add(avatar)
-scoreboard.add(scorel)
-allSprites.add(scorel)
-scoreboard.add(levell)
-allSprites.add(levell)
-
 avatar.allSprites = allSprites
 
 #Game loop
@@ -62,13 +55,13 @@ while 1:
 	gameState.update()
 
 	#these are not a sprites properly
+	#Other shapes or sprites
 	background.draw(screen,gameState)	
-	leftarrow.draw(screen,milliseconds,gameState)
-	rightarrow.draw(screen,milliseconds,gameState)
+	
 
+	#sprites
 	players.update(gameState)
 	enemies.update(gameState)
-	scoreboard.update(gameState)
 
 	colisionList = pygame.sprite.spritecollide(avatar, enemies,False)
 	if avatar.blink == False:
@@ -81,4 +74,7 @@ while 1:
 			gameState.lives -=1
 
 	allSprites.draw(screen) #draws all sprites
+	leftarrow.draw(screen,milliseconds,gameState)
+	rightarrow.draw(screen,milliseconds,gameState)
+	scoreboard.draw(screen,gameState)
 	pygame.display.flip()

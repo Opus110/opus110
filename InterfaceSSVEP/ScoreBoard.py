@@ -25,11 +25,11 @@ class SpriteText(pygame.sprite.Sprite):
 
 
 class ScoreLabel(SpriteText):
-	position = [0,0]
 	def __init__ (self, width, height):
 		SpriteText.__init__(self, width, height)		
 		self.setText("Score: ")
-		self.setPosition(self.margin,height-(self.rect.h+self.margin)*2)
+		self.setPosition(self.margin+100, height-(self.rect.h+self.margin)*1)
+		
 		pass
 
 	def update(self, *args):
@@ -40,7 +40,6 @@ class ScoreLabel(SpriteText):
 	pass
 
 class LevelLabel(SpriteText):
-	position = [0,0]
 	def __init__ (self, width, height):
 		SpriteText.__init__(self, width, height)		
 		self.setText("Level: ")
@@ -51,5 +50,39 @@ class LevelLabel(SpriteText):
 		gamestate = args[0]
 		text = "Level: "+str(gamestate.level)
 		self.setText(text)
+		pass
+	pass
+
+class LivesLabel(SpriteText):
+	def __init__ (self, width, height):
+		SpriteText.__init__(self, width, height)		
+		self.setText("Lives: ")
+		self.setPosition(self.margin,height-(self.rect.h+self.margin)*2)
+		pass
+
+	def update(self, *args):
+		gamestate = args[0]
+		text = "Lives: "+str(gamestate.lives)
+		self.setText(text)
+		pass
+	pass
+
+class ScoreBoard():
+	def __init__(self,width,height):
+		self.color = colors["black"]
+		self.width = width
+		self.height = height
+		self.scoreboard = pygame.sprite.Group()
+		self.scorel = ScoreLabel(width,height)
+		self.levell = LevelLabel(width,height)
+		self.livesLabel =  LivesLabel(width,height)
+		self.scoreboard.add(self.scorel)
+		self.scoreboard.add(self.levell)
+		self.scoreboard.add(self.livesLabel)
+		pass
+	def draw(self, scren, gamestate):
+		#pygame.draw.rect(scren, self.color, (5, self.height - 75, 250,70))
+		self.scoreboard.update(gamestate)
+		self.scoreboard.draw(scren)
 		pass
 	pass
