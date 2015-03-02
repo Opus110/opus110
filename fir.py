@@ -2,7 +2,7 @@ from numpy import sin, arange, pi
 from scipy.signal import lfilter, firwin
 from pylab import figure, plot, grid, show
  
-float32_t fir_coeff[29] = {
+fir_coeff = {
 	-0.0018225230, 
 	-0.0015879294, 
 	+0.0000000000, 

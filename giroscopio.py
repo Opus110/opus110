@@ -6,7 +6,7 @@ if platform.system() == "Windows":
 import gevent
 
 if __name__ == "__main__":
-  headset = emotiv.Emotiv(display_output=False)    
+  headset = emotiv.Emotiv(display_output=True)    
   gevent.spawn(headset.setup)
   gevent.sleep(0)
   try:

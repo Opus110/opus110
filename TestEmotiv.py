@@ -9,9 +9,8 @@ import gevent
 
 if __name__ == "__main__":
     headset = Emotiv(display_output = False)
-    #gevent.spawn(headset.setup)
-    #gevent.sleep(0) 
-    headset.setup()
+    gevent.spawn(headset.setup)
+    gevent.sleep(0) 
     try:
         while True:
             packet = headset.dequeue()
