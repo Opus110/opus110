@@ -15,6 +15,7 @@ from pylab import figure, plot, grid, show
 logging.basicConfig( level=logging.DEBUG,format="[%(levelname)s] – %(threadName) -10s : %(message)s")
 
 class SSVEPAnalizer(object):
+	sensorList = 'O1 O2'
 	packages = []
 	emotivThread = None
 	analizerThread = None
@@ -22,10 +23,12 @@ class SSVEPAnalizer(object):
 	epocBufferState = False
 	analizerState = False
 	AnalizerResult = None
-	def __init__(self):
+	def __init__(self,sensors=None):
 		self.emotivThread =  threading.Thread(target=self.epocBuffer,
 			args=[self.packages,self.bufferlength], name="Epoc Buffer")
 		self.analizerThread = threading.Thread(target=self.Analizer,name="Epoc Analizer")
+		if sensors!=None:
+			self.sensorList = sensors
 		pass
 	def Analizer(self):
 		cont = 0	
@@ -64,7 +67,7 @@ class SSVEPAnalizer(object):
 		signals = {}
 		results = {}
 		#sensors = 'AF3 F7 F3 FC5 T7 P7 O1 O2 P8 T8 FC6 F4 F8 AF4'.split(' ')
-		sensors = 'O1 O2'.split(' ')
+		sensors = self.sensorList.split(' ')
 		for name in sensors:
 			signals[name] = []
 		for packet in self.packages[0:128]:
@@ -151,13 +154,13 @@ class SSVEPAnalizer(object):
 
 
 if __name__ == "__main__":
-	analizer =  SSVEPAnalizer()
+	analizer =  SSVEPAnalizer('AF3 O1 O2')
 	analizer.startAnalizer()
 	try:
 		while analizer.AnalizerResult == None:
 			pass
 		while True:
-			print analizer.AnalizerResult["O1"][0],analizer.AnalizerResult["O2"][0]
+			print analizer.AnalizerResult["O1"][0],analizer.AnalizerResult["O2"][0], analizer.AnalizerResult["AF3"][0]
 			pass
 		pass
 	except KeyboardInterrupt, e:
