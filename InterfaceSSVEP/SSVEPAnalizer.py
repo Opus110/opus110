@@ -11,6 +11,8 @@ from numpy import sin, arange, pi, sqrt
 from scipy.signal import lfilter, firwin, periodogram
 from pylab import figure, plot, grid, show
 
+key = threading.Lock()
+
 
 logging.basicConfig( level=logging.DEBUG,format="[%(levelname)s] – %(threadName) -10s : %(message)s")
 
@@ -19,13 +21,12 @@ class SSVEPAnalizer(object):
 	packages = []
 	emotivThread = None
 	analizerThread = None
-	bufferlength = 128
+	bufferlength = 256
 	epocBufferState = False
 	analizerState = False
 	AnalizerResult = None
 	def __init__(self,sensors=None):
-		self.emotivThread =  threading.Thread(target=self.epocBuffer,
-			args=[self.packages,self.bufferlength], name="Epoc Buffer")
+		self.emotivThread =  threading.Thread(target=self.epocBuffer, name="Epoc Buffer")
 		self.analizerThread = threading.Thread(target=self.Analizer,name="Epoc Analizer")
 		if sensors!=None:
 			self.sensorList = sensors
@@ -35,11 +36,8 @@ class SSVEPAnalizer(object):
 		Test = False		
 		while self.analizerState:
 			self.AnalizerResult = self.analize()
-			if Test:
-				cont+= 1
-				if cont >=25:
-					self.analizerState = False
-			pass
+			sleep(10)
+			
 		pass
 		logging.debug("Saliendo del analizador")
 		self.stopBuffer()			
@@ -47,6 +45,7 @@ class SSVEPAnalizer(object):
 	def startAnalizer(self):
 		if self.analizerState == False:
 			self.startBuffer()
+			sleep(3)
 			logging.debug("Iniciando analizador")
 			self.analizerState = True
 			self.analizerThread.start()
@@ -60,7 +59,7 @@ class SSVEPAnalizer(object):
 		nSamples = self.bufferlength
 		sampleRate = 128. #this is the epoc rate
 		t = arange(nSamples) / sampleRate
-		cutoff_hz = 40
+		cutoff_hz = 60
 		nyq_rate = sampleRate / 2.
 		numtaps = 29
 		fir_coeff = firwin(numtaps, cutoff_hz/nyq_rate)
@@ -68,19 +67,28 @@ class SSVEPAnalizer(object):
 		results = {}
 		#sensors = 'AF3 F7 F3 FC5 T7 P7 O1 O2 P8 T8 FC6 F4 F8 AF4'.split(' ')
 		sensors = self.sensorList.split(' ')
+		key.acquire()
 		for name in sensors:
 			signals[name] = []
-		for packet in self.packages[0:128]:
+			pass
+		for packet in self.packages[:self.bufferlength]:
 			for name in sensors:
 				signals[name].append(packet.sensors[name]['value'])
+				#if name == 'O2':
+				#	print packet.sensors[name]
+				pass
+			pass
 		for name in sensors:
+			#print signals[name]
 			filtered_signal = lfilter(fir_coeff, 1.0, signals[name])
 			warmup = numtaps - 1
  
 			# The phase delay of the filtered signal
 			delay = (warmup / 2) / sampleRate
-			 
-			fres, espect = periodogram(filtered_signal, sampleRate)
+			#print(len(signals[name]))
+			#print "\n"
+			print signals[name]
+			fres, espect = periodogram(signals[name], sampleRate)
 			fmax, amax = self.fundamentalFrequency(fres,espect)
 			#logging.debug(name+" Max frecuency: "+str(fmax))
 			#logging.debug(name+" Max espectrum: "+str(amax))
@@ -100,6 +108,8 @@ class SSVEPAnalizer(object):
 				pass
 
 			pass
+		#print results
+		key.release()
 		return results			
 		pass
 	def fundamentalFrequency(self,f,espect):
@@ -120,12 +130,12 @@ class SSVEPAnalizer(object):
 		if self.epocBufferState == False:
 			self.epocBufferState = True
 			self.emotivThread.start()	
-			while len(self.packages) < self.bufferlength:
+			while len(self.packages) < self.bufferlength and self.epocBufferState:
 				logging.debug("Waiting an apropiate buffer ("+str(self.bufferlength)+" packages), actual "+str(len(self.packages)))
 				sleep(1)
 				pass
 		pass
-	def epocBuffer(self,packages,bufferlength):
+	def epocBuffer(self):
 		cont=0
 		logging.debug("Iniciando buffer del epoc")
 		headset = Emotiv(display_output = False)
@@ -135,17 +145,20 @@ class SSVEPAnalizer(object):
 		showFillMessage = True
 		while self.epocBufferState:
 			packet = headset.dequeue()
+			key.acquire()
 			if packet == None:
 			    logging.debug("Error, paquete nulo")
 			else:
 			    #print packet.gyro_x, packet.gyro_y
-				packages.append(packet)
+				self.packages.append(packet)
+				#print packet.sensors['O2']['value']
 			gevent.sleep(0)
-			if len(packages) > bufferlength :
+			if len(self.packages) > self.bufferlength :
 				if showFillMessage:
-					logging.debug("Buffer lleno con "+str(bufferlength)+" paquetes")
+					logging.debug("Buffer lleno con "+str(self.bufferlength)+" paquetes")
 					showFillMessage ^=True
-				packages.pop()
+				self.packages = self.packages[len(self.packages)-self.bufferlength:]
+			key.release()
 			pass
 		headset.close()
 		logging.debug("Buffer detenido")
@@ -154,17 +167,20 @@ class SSVEPAnalizer(object):
 
 
 if __name__ == "__main__":
-	analizer =  SSVEPAnalizer('AF3 O1 O2')
-	analizer.startAnalizer()
+	analizer =  SSVEPAnalizer('O1 O2')
 	try:
-		while analizer.AnalizerResult == None:
-			pass
+		analizer.startBuffer()
+		sleep(10)
 		while True:
-			print analizer.AnalizerResult["O1"][0],analizer.AnalizerResult["O2"][0], analizer.AnalizerResult["AF3"][0]
+			#print analizer.AnalizerResult["O1"][0],analizer.AnalizerResult["O2"][0], analizer.AnalizerResult["AF3"][0]
+			result = analizer.analize()
+			print result
+			sleep(1)
+
 			pass
 		pass
 	except KeyboardInterrupt, e:
-		analizer.stopAnalizer()
+		analizer.stopBuffer()
 		logging.debug("Exit")			
 		pass
 	pass
