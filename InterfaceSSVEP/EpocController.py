@@ -5,7 +5,7 @@ from time import sleep
 
 
 threads = list()
-logging.basicConfig( level=logging.DEBUG,format="[%(levelname)s] â€“ %(threadName) -10s : %(message)s")
+logging.basicConfig( level=logging.DEBUG,format="[%(levelname)s] â?? %(threadName) -10s : %(message)s")
 
 
 def startController():
