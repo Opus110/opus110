@@ -27,8 +27,8 @@ players = pygame.sprite.Group()
 
 #creating all game objects
 background =  BackgroundVScrolling(width,height)
-leftarrow = Arrow(width,height,True, frec = 10)
-rightarrow = Arrow(width,height,False, frec = 14)
+leftarrow = Arrow(width,height,True, frec = 8)
+rightarrow = Arrow(width,height,False, frec = 12)
 avatar = Avatar(width,height)
 scoreboard = ScoreBoard(width,height)
 

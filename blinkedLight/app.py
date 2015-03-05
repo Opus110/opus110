@@ -3,7 +3,7 @@ import sys, pygame
 from datetime import time
 
 #Frecuency settings
-frec = 8
+frec = 12
 #frec =  raw_input("Ingrese la frecuencia de parpadeo: ")
 frec = float(frec)
 print "Frecuencia: ", frec

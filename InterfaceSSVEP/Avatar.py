@@ -1,6 +1,8 @@
 import pygame
 from Assets import assets
 from GameState import *
+from Analizer import *
+import gevent
 
 debug = False;
 
@@ -19,6 +21,8 @@ class Avatar(pygame.sprite.DirtySprite):
 		self.blinkState = 0
 		self.allSprites = None
 		self.enemies = None
+		self.analizer = Analizer([8,12])
+		self.useAnalizer = False
 		pass
 	def startBlink(self):
 		if self.blink == False:
@@ -48,16 +52,22 @@ class Avatar(pygame.sprite.DirtySprite):
 			mouse =  pygame.mouse.get_pressed()
 			if debug:
 				print "Pressed buttons :",mouse
-			if (mouse[0] == 1 and mouse[2] == 1) == False:
-				if mouse[0] == 1:
-					speed[0] = -hspeed
-				elif mouse[2] == 1:
-					speed[0] = hspeed
-				else:
-					speed[0] = 0
+			if self.analizer.signal != None:
+				print self.analizer.signal['MaxO1'],self.analizer.signal['MaxO2']
+			if(self.useAnalizer):
+
+				pass
 			else:
-				speed[0]=0
-			
+				if (mouse[0] == 1 and mouse[2] == 1) == False:
+					if mouse[0] == 1:
+						speed[0] = -hspeed
+					elif mouse[2] == 1:
+						speed[0] = hspeed
+					else:
+						speed[0] = 0
+				else:
+					speed[0]=0
+			gevent.sleep(0)
 			self.rect = self.rect.move(speed)
 			if(self.rect.x < 0):
 				self.rect.x = 0

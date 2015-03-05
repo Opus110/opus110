@@ -21,7 +21,7 @@ class SSVEPAnalizer(object):
 	packages = []
 	emotivThread = None
 	analizerThread = None
-	bufferlength = 256
+	bufferlength = 128*3
 	epocBufferState = False
 	analizerState = False
 	AnalizerResult = None
@@ -87,7 +87,7 @@ class SSVEPAnalizer(object):
 			delay = (warmup / 2) / sampleRate
 			#print(len(signals[name]))
 			#print "\n"
-			print signals[name]
+			#print signals[name]
 			fres, espect = periodogram(signals[name], sampleRate)
 			fmax, amax = self.fundamentalFrequency(fres,espect)
 			#logging.debug(name+" Max frecuency: "+str(fmax))
@@ -152,12 +152,13 @@ class SSVEPAnalizer(object):
 			    #print packet.gyro_x, packet.gyro_y
 				self.packages.append(packet)
 				#print packet.sensors['O2']['value']
-			gevent.sleep(0)
+			
 			if len(self.packages) > self.bufferlength :
 				if showFillMessage:
 					logging.debug("Buffer lleno con "+str(self.bufferlength)+" paquetes")
 					showFillMessage ^=True
-				self.packages = self.packages[len(self.packages)-self.bufferlength:]
+				self.packages = self.packages[10:]
+			gevent.sleep(0)
 			key.release()
 			pass
 		headset.close()

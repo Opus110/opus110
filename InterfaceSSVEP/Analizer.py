@@ -15,16 +15,20 @@ from pylab import figure, plot, grid, show
 global signal
 signal = None
 
-class SSVEPAnalizer():
-    def __init__(self):
+class Analizer():
+    def __init__(self,frecs):
         self.signal = signal
+        self.headset = Emotiv(display_output = False)
+        gevent.spawn(self.analizeProccess)
+        gevent.sleep(0)
+        self.frecs = frecs
         pass
     def analize(self,signals,sensors,bufferlength, frecs):
             #logging.debug("Analize")
             nSamples = bufferlength
             sampleRate = 128. #this is the epoc rate
             t = arange(nSamples) / sampleRate
-            cutoff_hz = 60
+            cutoff_hz = 40
             nyq_rate = sampleRate / 2.
             numtaps = 29
             fir_coeff = firwin(numtaps, cutoff_hz/nyq_rate)
@@ -32,7 +36,7 @@ class SSVEPAnalizer():
             #sensors = 'AF3 F7 F3 FC5 T7 P7 O1 O2 P8 T8 FC6 F4 F8 AF4'.split(' ')      
             for name in sensors:
                 #print signals[name]
-                filtered_signal = lfilter(fir_coeff, 1.0, signals[name])
+                filtered_signal = lfilter(fir_coeff, 5.0, signals[name])
                 warmup = numtaps - 1
                 #print filtered_signal
                 # The phase delay of the filtered signal
@@ -40,15 +44,16 @@ class SSVEPAnalizer():
                 #print(len(signals[name]))
                 #print "\n"
                
-                fres, espect = periodogram(filtered_signal, sampleRate)
+                fres, espect = periodogram(filtered_signal[warmup:][5:], sampleRate)
 
                 #print max frec 
                 maxFrec = True
                 if maxFrec:
-                    mespect = max(espect)
+                    mespect = max(espect[5:])
                     i=0
-                    while espect[i]!= mespect: i+=1
-                    print "max frec=",fres[i]
+                    while espect[5:][i]!= mespect: i+=1
+                    #print "max frec=",fres[5:][i]
+                    results['Max'+name] = fres[5:][i]
 
                 frecs.sort()
                 results[name] = []
@@ -82,7 +87,7 @@ class SSVEPAnalizer():
             
             results["avg"] = []
             for i in range(len(frecs)):
-                fi=map(lambda n: results[n][0],sensors)
+                fi=map(lambda n: results[n][i],sensors)
                 results["avg"].append(sum(fi)/len(fi))
             #print results
             return results          
@@ -90,7 +95,7 @@ class SSVEPAnalizer():
 
     def analizeProccess(self):
 
-        headset = Emotiv(display_output = False)
+        headset = self.headset
         gevent.spawn(headset.setup)
         gevent.sleep(0)
         packets = {};
@@ -108,29 +113,30 @@ class SSVEPAnalizer():
                         pass
                    
                     if len(packets[sensors[0]]) >= bufferLenght:
-                        self.signal = self.analize(packets,sensors,bufferLenght,[8,12])
+                        self.signal = self.analize(packets,sensors,bufferLenght,self.frecs)
                         #print self.signal
                         for name in sensors:
-                            packets[name] = packets[name][5:]
+                            packets[name] = packets[name][64:]
                             pass
                         pass
                 gevent.sleep(0)
         pass
-
+    def close(self):
+        self.headset.close()
+        pass
 
 if __name__ == "__main__":
-    try:
-        analizer = SSVEPAnalizer()
-        gevent.spawn(analizer.analizeProccess)
-        gevent.sleep(0)
+    analizer = Analizer([8,12])  
+    try:              
         while True:
-            print analizer.signal 
+            if analizer.signal!= None:
+                print analizer.signal['MaxO1'],analizer.signal['MaxO2']
             gevent.sleep(0)
             pass
     except KeyboardInterrupt:
-        #headset.close()
+        analizer.close()
         pass
     finally:
-        #headset.close()
+        analizer.close()
         pass
     print "Exit!!!"
