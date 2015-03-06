@@ -14,7 +14,7 @@ from pylab import figure, plot, grid, show
 key = threading.Lock()
 
 
-logging.basicConfig( level=logging.DEBUG,format="[%(levelname)s] â€“ %(threadName) -10s : %(message)s")
+logging.basicConfig( level=logging.DEBUG,format="[%(levelname)s] â?? %(threadName) -10s : %(message)s")
 
 class SSVEPAnalizer(object):
 	sensorList = 'O1 O2'

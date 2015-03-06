@@ -21,8 +21,10 @@ class Avatar(pygame.sprite.DirtySprite):
 		self.blinkState = 0
 		self.allSprites = None
 		self.enemies = None
-		self.analizer = Analizer([8,12])
-		self.useAnalizer = False
+		self.leftFrec = 8 
+		self.rightFrec = 12
+		self.analizer = Analizer([self.leftFrec,self.rightFrec])
+		self.useAnalizer = True
 		pass
 	def startBlink(self):
 		if self.blink == False:
@@ -52,21 +54,39 @@ class Avatar(pygame.sprite.DirtySprite):
 			mouse =  pygame.mouse.get_pressed()
 			if debug:
 				print "Pressed buttons :",mouse
+			
 			if self.analizer.signal != None:
 				print self.analizer.signal['MaxO1'],self.analizer.signal['MaxO2']
-			if(self.useAnalizer):
-
 				pass
-			else:
-				if (mouse[0] == 1 and mouse[2] == 1) == False:
-					if mouse[0] == 1:
+			if(self.useAnalizer):
+				if self.analizer == None:
+					print "Analizer is null"
+				elif self.analizer.signal != None:
+					max1 =  self.analizer.signal["MaxO1"]
+					max2 =  self.analizer.signal["MaxO2"]
+					avg =  (max1+max2)/2
+					print max1,max2,avg
+					if avg >= 9 and avg <= 11: #move left
 						speed[0] = -hspeed
-					elif mouse[2] == 1:
+						print "Move left"
+						pass
+					elif avg>11 and avg <=13: #move right
 						speed[0] = hspeed
+						print "Move right"
+						pass
 					else:
-						speed[0] = 0
-				else:
-					speed[0]=0
+						speed[0]  = 0
+					pass
+				pass			
+			if (mouse[0] == 1 and mouse[2] == 1) == False:
+				if mouse[0] == 1:
+					speed[0] = -hspeed
+				elif mouse[2] == 1:
+					speed[0] = hspeed
+				elif self.analizer == None:
+					speed[0] = 0
+			else:
+				speed[0]=0
 			gevent.sleep(0)
 			self.rect = self.rect.move(speed)
 			if(self.rect.x < 0):
